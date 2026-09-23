@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Estante Dev</string>
+
+    <!-- Navegação -->
+    <string name="nav_search">Buscar</string>
+    <string name="nav_shelf">Minha estante</string>
+    <string name="cd_back">Voltar</string>
+
+    <!-- Busca -->
+    <string name="search_title">Livros de programação</string>
+    <string name="search_label">Título, autor ou tecnologia</string>
+    <string name="cd_clear_search">Limpar busca</string>
+    <string name="action_refresh">Atualizar resultados</string>
+    <string name="search_idle_title">O que você quer ler?</string>
+    <string name="search_idle_message">Digite pelo menos 2 letras ou escolha um dos temas acima.</string>
+    <string name="cd_topic">Buscar livros sobre %1$s</string>
+    <string name="search_loading">Buscando livros…</string>
+    <string name="search_empty_title">Nenhum livro encontrado</string>
+    <string name="search_empty_message">Não achamos nada para “%1$s”. Tente outro termo.</string>
+    <string name="search_stale_banner">Sem conexão: mostrando resultados salvos no aparelho.</string>
+    <plurals name="search_results_count">
+        <item quantity="one">%d resultado</item>
+        <item quantity="other">%d resultados</item>
+    </plurals>
+
+    <!-- Erros -->
+    <string name="error_title">Algo deu errado</string>
+    <string name="error_no_connection">Sem conexão com a internet. Verifique a rede e tente de novo.</string>
+    <string name="error_server">O servidor da Open Library não respondeu bem. Tente de novo em instantes.</string>
+    <string name="error_unknown">Não foi possível carregar os dados.</string>
+    <string name="action_retry">Tentar de novo</string>
+
+    <!-- Livro -->
+    <string name="unknown_author">Autor desconhecido</string>
+    <string name="unknown_year">Ano desconhecido</string>
+    <string name="unknown_pages">Nº de páginas desconhecido</string>
+    <plurals name="pages_count">
+        <item quantity="one">%d página</item>
+        <item quantity="other">%d páginas</item>
+    </plurals>
+    <string name="cd_cover">Capa de %1$s</string>
+    <string name="cd_no_cover">Sem capa</string>
+    <string name="book_item_description">%1$s, de %2$s. %3$s</string>
+
+    <!-- Detalhes -->
+    <string name="detail_title">Detalhes</string>
+    <string name="detail_not_found">Este livro não está mais salvo no aparelho.</string>
+    <string name="detail_description">Sobre o livro</string>
+    <string name="detail_description_loading">Carregando descrição…</string>
+    <string name="detail_description_empty">A Open Library não tem descrição para este livro.</string>
+    <string name="detail_description_error">Não foi possível carregar a descrição.</string>
+    <string name="detail_subjects">Assuntos</string>
+    <string name="detail_my_reading">Minha leitura</string>
+    <string name="detail_not_on_shelf">Este livro ainda não está na sua estante.</string>
+    <string name="action_add_to_shelf">Adicionar à estante</string>
+    <string name="action_edit_reading">Editar leitura</string>
+    <string name="action_share">Compartilhar</string>
+    <string name="share_text">Livro de programação que estou lendo: %1$s, de %2$s. %3$s</string>
+    <string name="share_chooser">Compartilhar livro</string>
+    <string name="progress_pages">%1$d de %2$d páginas</string>
+    <string name="progress_pages_no_total">%1$d páginas lidas</string>
+
+    <!-- Status -->
+    <string name="status_want_to_read">Quero ler</string>
+    <string name="status_reading">Lendo</string>
+    <string name="status_finished">Lido</string>
+
+    <!-- Formulário -->
+    <string name="editor_title_new">Adicionar à estante</string>
+    <string name="editor_title_edit">Editar leitura</string>
+    <string name="editor_status">Situação</string>
+    <string name="editor_pages_label">Páginas lidas</string>
+    <string name="editor_pages_of_total">de %1$d páginas</string>
+    <string name="editor_rating">Sua nota</string>
+    <string name="editor_note_label">Anotação (opcional)</string>
+    <string name="editor_note_counter">%1$d/%2$d</string>
+    <string name="action_save">Salvar</string>
+    <string name="action_remove_from_shelf">Remover da estante</string>
+    <string name="editor_fix_errors">Corrija os campos destacados para salvar.</string>
+
+    <string name="error_pages_required">Informe quantas páginas você já leu.</string>
+    <string name="error_pages_not_a_number">Use apenas números.</string>
+    <string name="error_pages_out_of_range">Informe um número entre 0 e %1$d.</string>
+    <string name="error_pages_negative">O número de páginas não pode ser negativo.</string>
+    <string name="error_rating_required">Dê uma nota de 1 a 5 para o livro lido.</string>
+    <string name="error_note_too_long">A anotação pode ter no máximo %1$d caracteres.</string>
+
+    <!-- Avaliação -->
+    <string name="cd_rate">Nota %1$d de 5</string>
+    <string name="cd_rating_value">Nota: %1$d de 5</string>
+    <string name="cd_rating_empty">Sem nota</string>
+
+    <!-- Estante -->
+    <string name="shelf_title">Minha estante</string>
+    <string name="shelf_filter_all">Todos (%1$d)</string>
+    <string name="shelf_filter_status">%1$s (%2$d)</string>
+    <string name="shelf_loading">Carregando sua estante…</string>
+    <string name="shelf_empty_title">Sua estante está vazia</string>
+    <string name="shelf_empty_message">Busque um livro e toque em “Adicionar à estante”.</string>
+    <string name="shelf_empty_filter_title">Nada por aqui</string>
+    <string name="shelf_empty_filter_message">Nenhum livro com a situação “%1$s”.</string>
+    <string name="action_go_to_search">Buscar livros</string>
+    <string name="action_show_all">Mostrar todos</string>
+</resources>

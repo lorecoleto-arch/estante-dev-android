@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Estante Dev (Views)</string>
+    <string name="title_book_list">Livros de programação</string>
+
+    <plurals name="summary_read">
+        <item quantity="one">Você leu %1$d de %2$d livros</item>
+        <item quantity="other">Você leu %1$d de %2$d livros</item>
+    </plurals>
+    <plurals name="pages">
+        <item quantity="one">%d página</item>
+        <item quantity="other">%d páginas</item>
+    </plurals>
+
+    <string name="year_unknown">Ano desconhecido</string>
+    <string name="pages_unknown">nº de páginas desconhecido</string>
+    <string name="meta_format">%1$s · %2$s</string>
+    <string name="synopsis_unavailable">Sinopse não disponível para este livro.</string>
+
+    <string name="label_synopsis">Sinopse</string>
+    <string name="label_my_reading">Minha leitura</string>
+    <string name="status_read">Você já leu este livro.</string>
+    <string name="status_not_read">Você ainda não leu este livro.</string>
+    <string name="action_mark_read">Marcar como lido</string>
+    <string name="action_mark_unread">Desmarcar como lido</string>
+    <string name="rating_hint">Toque nas estrelas para dar sua nota.</string>
+    <string name="rating_locked_hint">Marque como lido para poder avaliar.</string>
+
+    <string name="cd_back">Voltar</string>
+    <string name="cd_book_item">%1$s, de %2$s</string>
+    <string name="cd_book_item_read">%1$s, de %2$s. Lido</string>
+    <string name="cd_rate_stars">Dar nota %d de 5</string>
+    <string name="cd_rating_value">Nota %d de 5</string>
+    <string name="cd_rating_empty">Sem nota</string>
+</resources>

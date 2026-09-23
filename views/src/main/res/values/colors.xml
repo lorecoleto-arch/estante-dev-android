@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="launcher_background">#7A4E2D</color>
+    <!-- Cores das "capas" (todas com contraste >= 4.5:1 contra o texto branco) -->
+    <color name="cover_1">#7A4E2D</color>
+    <color name="cover_2">#2E5E4E</color>
+    <color name="cover_3">#8A3B12</color>
+    <color name="cover_4">#4A3F7A</color>
+    <color name="cover_5">#1F5673</color>
+    <color name="cover_6">#6B4C00</color>
+    <color name="on_cover">#FFFFFF</color>
+
+    <color name="brand">#7A4E2D</color>
+    <color name="brand_light">#FFB688</color>
+</resources>
