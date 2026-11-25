@@ -1,6 +1,14 @@
-# Estante Dev 📚💻
+# Estante Dev 📚💻 — Trabalho Final (Jetpack Compose)
 
 **Aluna:** Lorena Coleto — RA 842835 · **Projeto:** Estante de Livros
+
+> **Parte final do projeto.** Este repositório é a **continuação da entrega parcial**: o mesmo tema
+> (estante de livros de programação) agora com toda a interface em Jetpack Compose.
+>
+> | Etapa | O que foi feito | Onde está |
+> |---|---|---|
+> | Parcial | 2 telas em Android Views (XML), Intent explícita e dados simulados | tag [`parcial`](../../tree/parcial) |
+> | **Final (esta entrega)** | 4 telas em Compose, Navigation 3, `ViewModel`, coroutines, API e dados salvos no aparelho | branch `main` |
 
 ## Objetivo
 
@@ -10,9 +18,6 @@ vê os detalhes e registra na sua estante se **quer ler**, está **lendo** (com 
 **já leu** (com nota e anotação). A estante fica salva no aparelho e continua disponível sem internet.
 
 Toda a interface é feita em **Jetpack Compose**, com uma única `Activity`.
-
-> A entrega da **Parcial** (Android Views/XML) está preservada na tag
-> [`parcial`](../../tree/parcial) deste repositório.
 
 ---
 
