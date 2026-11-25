@@ -15,6 +15,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -33,7 +35,6 @@ sealed interface SearchResultsState {
 }
 
 data class SearchUiState(
-    val query: String = "",
     val results: SearchResultsState = SearchResultsState.Loading,
     /** Situação de cada livro que já está na estante (para mostrar o selo na lista). */
     val shelfStatus: Map<String, ReadingStatus> = emptyMap(),
@@ -49,15 +50,22 @@ class SearchViewModel(
     private val preferences: UserPreferencesRepository,
 ) : ViewModel() {
 
-    private val query = MutableStateFlow("")
+    /**
+     * Texto do campo de busca. Fica fora do [uiState] de propósito: o `combine` entrega o valor com
+     * atraso, e um campo de texto atrasado embaralha as letras de quem digita rápido.
+     */
+    private val _query = MutableStateFlow("")
+    val query: StateFlow<String> = _query.asStateFlow()
+
     private val results = MutableStateFlow<SearchResultsState>(SearchResultsState.Loading)
 
     private val shelfStatus = shelfRepository.observeShelf()
         .map { items -> items.associate { it.book.id to it.entry.status } }
         .onStart { emit(emptyMap()) }
+        .catch { emit(emptyMap()) } // sem os selos, mas a busca continua funcionando
 
     val uiState: StateFlow<SearchUiState> =
-        combine(query, results, shelfStatus) { q, r, s -> SearchUiState(q, r, s) }
+        combine(results, shelfStatus, ::SearchUiState)
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), SearchUiState())
 
     /** Busca em andamento. Uma nova busca sempre cancela a anterior. */
@@ -67,14 +75,14 @@ class SearchViewModel(
         // Ao abrir o app, repete a última busca salva no DataStore.
         searchJob = viewModelScope.launch {
             val last = preferences.lastQuery.first()
-            query.value = last
+            _query.value = last
             runSearch(last, forceRefresh = false)
         }
     }
 
     fun onQueryChange(text: String) {
         if (text.length > MAX_QUERY_LENGTH) return
-        query.value = text
+        _query.value = text
         // Debounce: espera o usuário parar de digitar antes de chamar a API.
         launchSearch(delayMillis = DEBOUNCE_MILLIS, forceRefresh = false)
     }
@@ -83,7 +91,7 @@ class SearchViewModel(
 
     /** Toque num atalho de tema: preenche o campo e busca na hora (sem debounce). */
     fun onTopicSelected(topicQuery: String) {
-        query.value = topicQuery
+        _query.value = topicQuery
         launchSearch(delayMillis = 0, forceRefresh = false)
     }
 
@@ -96,7 +104,7 @@ class SearchViewModel(
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
             delay(delayMillis)
-            runSearch(query.value, forceRefresh)
+            runSearch(_query.value, forceRefresh)
         }
     }
 

@@ -1,6 +1,7 @@
 package com.estante.app.ui.search
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
@@ -56,6 +57,7 @@ import com.estante.app.ui.common.ErrorState
 import com.estante.app.ui.common.LoadingState
 import com.estante.app.ui.common.MaxContentWidth
 import com.estante.app.ui.common.StaleDataBanner
+import kotlinx.coroutines.Dispatchers
 
 /** Versão "com ViewModel": só coleta o estado e repassa os eventos. */
 @Composable
@@ -65,7 +67,10 @@ fun SearchScreen(
 ) {
     // collectAsStateWithLifecycle para de coletar quando o app vai para segundo plano.
     val state by viewModel.uiState.collectAsStateWithLifecycle()
+    // Main.immediate: o campo de texto recebe o valor na mesma hora em que o usuário digita.
+    val query by viewModel.query.collectAsStateWithLifecycle(context = Dispatchers.Main.immediate)
     SearchScreen(
+        query = query,
         state = state,
         onQueryChange = viewModel::onQueryChange,
         onSearch = viewModel::onSearch,
@@ -80,6 +85,7 @@ fun SearchScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
+    query: String,
     state: SearchUiState,
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
@@ -109,12 +115,12 @@ fun SearchScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             OutlinedTextField(
-                value = state.query,
+                value = query,
                 onValueChange = onQueryChange,
                 label = { Text(stringResource(R.string.search_label)) },
                 leadingIcon = { Icon(Icons.Filled.Search, contentDescription = null) },
                 trailingIcon = {
-                    if (state.query.isNotEmpty()) {
+                    if (query.isNotEmpty()) {
                         IconButton(onClick = onClear) {
                             Icon(Icons.Filled.Clear, contentDescription = stringResource(R.string.cd_clear_search))
                         }
@@ -133,7 +139,7 @@ fun SearchScreen(
             )
 
             TopicChips(
-                currentQuery = state.query,
+                currentQuery = query,
                 onTopicClick = { topic ->
                     focusManager.clearFocus()
                     onTopicClick(topic)
@@ -212,28 +218,29 @@ private fun BookResultsList(
     onBookClick: (String) -> Unit,
 ) {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
-        LazyColumn(Modifier.widthIn(max = MaxContentWidth).fillMaxSize()) {
-            if (isStale) {
-                item(key = "stale") { StaleDataBanner(Modifier.animateItem()) }
-            }
-            item(key = "count") {
-                Text(
-                    text = pluralStringResource(R.plurals.search_results_count, books.size, books.size),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                        .semantics { liveRegion = LiveRegionMode.Polite },
-                )
-            }
-            items(books, key = { it.id }) { book ->
-                Column(Modifier.animateItem()) {
-                    BookListItem(
-                        book = book,
-                        status = shelfStatus[book.id],
-                        onClick = { onBookClick(book.id) },
+        Column(Modifier.widthIn(max = MaxContentWidth).fillMaxSize()) {
+            // Fora da lista: assim o aviso aparece sempre, mesmo com a lista rolada.
+            AnimatedVisibility(visible = isStale) { StaleDataBanner() }
+            LazyColumn(Modifier.fillMaxSize()) {
+                item(key = "count") {
+                    Text(
+                        text = pluralStringResource(R.plurals.search_results_count, books.size, books.size),
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .semantics { liveRegion = LiveRegionMode.Polite },
                     )
-                    HorizontalDivider(Modifier.padding(start = 84.dp))
+                }
+                items(books, key = { it.id }) { book ->
+                    Column(Modifier.animateItem()) {
+                        BookListItem(
+                            book = book,
+                            status = shelfStatus[book.id],
+                            onClick = { onBookClick(book.id) },
+                        )
+                        HorizontalDivider(Modifier.padding(start = 84.dp))
+                    }
                 }
             }
         }

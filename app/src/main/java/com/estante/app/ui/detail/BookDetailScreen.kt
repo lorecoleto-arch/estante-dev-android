@@ -53,6 +53,8 @@ import com.estante.app.domain.ReadingStatus
 import com.estante.app.domain.ShelfEntry
 import com.estante.app.ui.common.BookCover
 import com.estante.app.ui.common.EmptyState
+import com.estante.app.ui.common.ErrorKind
+import com.estante.app.ui.common.ErrorState
 import com.estante.app.ui.common.LoadingState
 import com.estante.app.ui.common.MaxContentWidth
 import com.estante.app.ui.common.RatingBar
@@ -70,6 +72,7 @@ fun BookDetailScreen(
         state = state,
         onBack = onBack,
         onEditReading = onEditReading,
+        onRetry = viewModel::onRetry,
         onRetryDescription = viewModel::onRetryDescription,
     )
 }
@@ -80,6 +83,7 @@ fun BookDetailScreen(
     state: BookDetailUiState,
     onBack: () -> Unit,
     onEditReading: () -> Unit,
+    onRetry: () -> Unit,
     onRetryDescription: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -118,7 +122,8 @@ fun BookDetailScreen(
     ) { padding ->
         Box(Modifier.padding(padding).fillMaxSize()) {
             when (state) {
-                BookDetailUiState.Loading -> LoadingState(stringResource(R.string.detail_description_loading))
+                BookDetailUiState.Loading -> LoadingState(stringResource(R.string.detail_loading))
+                BookDetailUiState.Error -> ErrorState(kind = ErrorKind.UNKNOWN, onRetry = onRetry)
                 BookDetailUiState.NotFound -> EmptyState(
                     icon = Icons.Outlined.ErrorOutline,
                     title = stringResource(R.string.error_title),

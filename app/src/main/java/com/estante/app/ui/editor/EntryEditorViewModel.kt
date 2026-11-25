@@ -28,6 +28,9 @@ enum class EditorResult { SAVED, REMOVED }
 
 data class EntryEditorUiState(
     val isLoading: Boolean = true,
+    val loadFailed: Boolean = false,
+    /** O livro não está (mais) salvo no aparelho, então não há o que registrar. */
+    val bookNotFound: Boolean = false,
     val bookTitle: String = "",
     val totalPages: Int? = null,
     val isExistingEntry: Boolean = false,
@@ -52,27 +55,48 @@ class EntryEditorViewModel(
     val uiState: StateFlow<EntryEditorUiState> = _uiState.asStateFlow()
 
     init {
+        load()
+    }
+
+    fun onRetryLoad() = load()
+
+    private fun load() {
+        _uiState.update { it.copy(isLoading = true, loadFailed = false) }
         viewModelScope.launch {
-            val book = bookRepository.observeBook(bookId).first()
-            val entry = shelfRepository.observeEntry(bookId).first()
-            val form = entry?.let {
-                EntryForm(
-                    status = it.status,
-                    pagesRead = it.pagesRead?.toString().orEmpty(),
-                    rating = it.rating,
-                    note = it.note.orEmpty(),
-                )
-            } ?: EntryForm()
-            _uiState.update {
-                it.copy(
-                    isLoading = false,
-                    bookTitle = book?.title.orEmpty(),
-                    totalPages = book?.pageCount,
-                    isExistingEntry = entry != null,
-                    form = form,
-                    validation = validate(form, book?.pageCount),
-                )
+            try {
+                loadForm()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoading = false, loadFailed = true) }
             }
+        }
+    }
+
+    private suspend fun loadForm() {
+        val book = bookRepository.observeBook(bookId).first()
+        if (book == null) {
+            _uiState.update { it.copy(isLoading = false, bookNotFound = true) }
+            return
+        }
+        val entry = shelfRepository.observeEntry(bookId).first()
+        val form = entry?.let {
+            EntryForm(
+                status = it.status,
+                pagesRead = it.pagesRead?.toString().orEmpty(),
+                rating = it.rating,
+                note = it.note.orEmpty(),
+            )
+        } ?: EntryForm()
+        _uiState.update {
+            it.copy(
+                isLoading = false,
+                bookTitle = book.title,
+                totalPages = book.pageCount,
+                isExistingEntry = entry != null,
+                form = form,
+                validation = validate(form, book.pageCount),
+            )
         }
     }
 
@@ -89,7 +113,7 @@ class EntryEditorViewModel(
 
     fun onSave() {
         val state = _uiState.value
-        if (state.isLoading || state.isSaving) return // evita salvar duas vezes com toque duplo
+        if (state.isLoading || state.isSaving || state.bookNotFound) return // evita salvar duas vezes com toque duplo
 
         val validation = validate(state.form, state.totalPages)
         if (!validation.isValid) {

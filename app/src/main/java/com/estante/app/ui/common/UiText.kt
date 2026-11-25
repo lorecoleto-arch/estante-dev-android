@@ -5,6 +5,7 @@ import com.estante.app.R
 import com.estante.app.domain.ReadingStatus
 import retrofit2.HttpException
 import java.io.IOException
+import java.net.SocketTimeoutException
 
 /** Tipos de erro que a interface sabe explicar ao usuário. */
 enum class ErrorKind(@StringRes val messageRes: Int) {
@@ -14,8 +15,8 @@ enum class ErrorKind(@StringRes val messageRes: Int) {
 }
 
 fun Throwable.toErrorKind(): ErrorKind = when (this) {
-    is IOException -> ErrorKind.NO_CONNECTION // sem internet, DNS, timeout...
-    is HttpException -> ErrorKind.SERVER
+    is HttpException, is SocketTimeoutException -> ErrorKind.SERVER // respondeu com erro ou demorou demais
+    is IOException -> ErrorKind.NO_CONNECTION // sem internet, DNS...
     else -> ErrorKind.UNKNOWN
 }
 

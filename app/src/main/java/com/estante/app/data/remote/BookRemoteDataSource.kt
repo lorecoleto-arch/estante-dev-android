@@ -1,9 +1,13 @@
 package com.estante.app.data.remote
 
 import com.estante.app.domain.Book
+import kotlinx.coroutines.delay
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonPrimitive
+import retrofit2.HttpException
+import java.net.ConnectException
+import java.net.SocketTimeoutException
 
 /** Fonte remota de livros. É uma interface para podermos usar um fake nos testes. */
 interface BookRemoteDataSource {
@@ -16,10 +20,30 @@ class OpenLibraryRemoteDataSource(
 ) : BookRemoteDataSource {
 
     override suspend fun search(query: String): List<Book> =
-        api.search(query).docs.mapNotNull { it.toDomain() }.distinctBy { it.id }
+        retryOnce { api.search(query) }.docs.mapNotNull { it.toDomain() }.distinctBy { it.id }
 
     override suspend fun fetchDescription(bookId: String): String? =
-        api.work(bookId).toDescription()
+        retryOnce { api.work(bookId) }.toDescription()
+
+    /** A Open Library falha de vez em quando e responde na chamada seguinte: tenta mais uma vez. */
+    private suspend fun <T> retryOnce(call: suspend () -> T): T =
+        try {
+            call()
+        } catch (e: Exception) {
+            if (!e.isTransient()) throw e
+            delay(RETRY_DELAY_MILLIS)
+            call()
+        }
+
+    private fun Exception.isTransient(): Boolean = when (this) {
+        is SocketTimeoutException, is ConnectException -> true // demorou demais ou recusou a conexão
+        is HttpException -> code() >= 500
+        else -> false // sem internet, cancelamento, pedido inválido...
+    }
+
+    private companion object {
+        const val RETRY_DELAY_MILLIS = 1_000L
+    }
 }
 
 /** DTO -> modelo de domínio. Itens sem título são descartados. */

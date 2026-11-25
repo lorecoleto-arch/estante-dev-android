@@ -16,7 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Estante"
 
-// Parcial: Android Views (XML) + navegação por Intent explícita
-include(":views")
-// Etapa 2: Jetpack Compose
 include(":app")

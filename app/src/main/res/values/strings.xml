@@ -18,7 +18,7 @@
     <string name="search_loading">Buscando livros…</string>
     <string name="search_empty_title">Nenhum livro encontrado</string>
     <string name="search_empty_message">Não achamos nada para “%1$s”. Tente outro termo.</string>
-    <string name="search_stale_banner">Sem conexão: mostrando resultados salvos no aparelho.</string>
+    <string name="search_stale_banner">Não foi possível atualizar: mostrando resultados salvos no aparelho.</string>
     <plurals name="search_results_count">
         <item quantity="one">%d resultado</item>
         <item quantity="other">%d resultados</item>
@@ -45,6 +45,7 @@
 
     <!-- Detalhes -->
     <string name="detail_title">Detalhes</string>
+    <string name="detail_loading">Carregando livro…</string>
     <string name="detail_not_found">Este livro não está mais salvo no aparelho.</string>
     <string name="detail_description">Sobre o livro</string>
     <string name="detail_description_loading">Carregando descrição…</string>
@@ -69,6 +70,7 @@
     <!-- Formulário -->
     <string name="editor_title_new">Adicionar à estante</string>
     <string name="editor_title_edit">Editar leitura</string>
+    <string name="editor_loading">Carregando formulário…</string>
     <string name="editor_status">Situação</string>
     <string name="editor_pages_label">Páginas lidas</string>
     <string name="editor_pages_of_total">de %1$d páginas</string>
@@ -77,6 +79,9 @@
     <string name="editor_note_counter">%1$d/%2$d</string>
     <string name="action_save">Salvar</string>
     <string name="action_remove_from_shelf">Remover da estante</string>
+    <string name="editor_saved">Leitura salva na sua estante.</string>
+    <string name="editor_removed">Livro removido da estante.</string>
+    <string name="editor_save_failed">Não foi possível salvar. Tente de novo.</string>
     <string name="editor_fix_errors">Corrija os campos destacados para salvar.</string>
 
     <string name="error_pages_required">Informe quantas páginas você já leu.</string>

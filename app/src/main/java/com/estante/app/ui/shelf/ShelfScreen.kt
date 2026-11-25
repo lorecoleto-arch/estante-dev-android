@@ -55,6 +55,7 @@ fun ShelfScreen(
         onFilterChange = viewModel::onFilterChange,
         onBookClick = onBookClick,
         onGoToSearch = onGoToSearch,
+        onRetry = viewModel::onRetry,
     )
 }
 
@@ -65,6 +66,7 @@ fun ShelfScreen(
     onFilterChange: (ReadingStatus?) -> Unit,
     onBookClick: (String) -> Unit,
     onGoToSearch: () -> Unit,
+    onRetry: () -> Unit,
 ) {
     Scaffold(
         topBar = { TopAppBar(title = { Text(stringResource(R.string.shelf_title)) }) },
@@ -72,8 +74,7 @@ fun ShelfScreen(
         Box(Modifier.padding(padding).fillMaxSize(), contentAlignment = Alignment.TopCenter) {
             when (state) {
                 ShelfUiState.Loading -> LoadingState(stringResource(R.string.shelf_loading))
-                // Erro ao ler o banco local: "tentar de novo" leva o usuário para a busca.
-                ShelfUiState.Error -> ErrorState(kind = ErrorKind.UNKNOWN, onRetry = onGoToSearch)
+                ShelfUiState.Error -> ErrorState(kind = ErrorKind.UNKNOWN, onRetry = onRetry)
                 is ShelfUiState.Loaded -> Column(
                     Modifier.widthIn(max = MaxContentWidth).fillMaxSize(),
                 ) {

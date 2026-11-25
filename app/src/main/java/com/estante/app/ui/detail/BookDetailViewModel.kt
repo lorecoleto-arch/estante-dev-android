@@ -8,11 +8,17 @@ import com.estante.app.data.ShelfRepository
 import com.estante.app.domain.Book
 import com.estante.app.domain.ShelfEntry
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 sealed interface DescriptionUi {
@@ -24,6 +30,7 @@ sealed interface DescriptionUi {
 sealed interface BookDetailUiState {
     data object Loading : BookDetailUiState
     data object NotFound : BookDetailUiState
+    data object Error : BookDetailUiState
     data class Content(
         val book: Book,
         /** `null` = o livro ainda não está na estante. */
@@ -35,13 +42,22 @@ sealed interface BookDetailUiState {
 class BookDetailViewModel(
     private val bookId: String,
     private val bookRepository: BookRepository,
-    shelfRepository: ShelfRepository,
+    private val shelfRepository: ShelfRepository,
 ) : ViewModel() {
 
     private val descriptionFailed = MutableStateFlow(false)
+    private var descriptionJob: Job? = null
+
+    /** Cada toque em "Tentar de novo" muda este número, e isso refaz a leitura do banco. */
+    private val attempt = MutableStateFlow(0)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val uiState: StateFlow<BookDetailUiState> = attempt
+        .flatMapLatest { observeBook() }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), BookDetailUiState.Loading)
 
     /** Junta três fontes reativas: livro (cache), registro na estante e descrição. */
-    val uiState: StateFlow<BookDetailUiState> = combine(
+    private fun observeBook(): Flow<BookDetailUiState> = combine(
         bookRepository.observeBook(bookId),
         shelfRepository.observeEntry(bookId),
         bookRepository.observeDescription(bookId),
@@ -57,9 +73,14 @@ class BookDetailViewModel(
             }
             BookDetailUiState.Content(book, entry, descriptionUi)
         }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), BookDetailUiState.Loading)
+    }.catch { emit(BookDetailUiState.Error) }
 
     init {
+        loadDescription()
+    }
+
+    fun onRetry() {
+        attempt.update { it + 1 }
         loadDescription()
     }
 
@@ -67,7 +88,8 @@ class BookDetailViewModel(
 
     /** Roda no viewModelScope: se o usuário sair da tela, a requisição é cancelada junto. */
     private fun loadDescription() {
-        viewModelScope.launch {
+        descriptionJob?.cancel()
+        descriptionJob = viewModelScope.launch {
             descriptionFailed.value = false
             try {
                 bookRepository.refreshDescription(bookId)

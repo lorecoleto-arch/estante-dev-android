@@ -39,7 +39,7 @@ class SearchViewModelTest {
         advanceUntilIdle()
 
         val state = vm.uiState.value
-        assertEquals("kotlin", state.query)
+        assertEquals("kotlin", vm.query.value)
         assertEquals(2, (state.results as SearchResultsState.Content).books.size)
     }
 

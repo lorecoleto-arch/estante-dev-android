@@ -56,6 +56,9 @@ class EstanteAppFlowTest {
         composeRule.waitForIdle()
         assertEquals(ReadingStatus.FINISHED, container.shelfRepository.entries.value["OL1W"]?.status)
 
+        // ...e o app confirma o sucesso
+        composeRule.onNodeWithText("Leitura salva na sua estante.").assertIsDisplayed()
+
         // 5. Voltou aos detalhes, que já mostram o novo estado
         composeRule.onNodeWithText("Editar leitura").performScrollTo().assertIsDisplayed()
 

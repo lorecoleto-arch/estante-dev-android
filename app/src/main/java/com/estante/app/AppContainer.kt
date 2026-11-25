@@ -36,8 +36,9 @@ class DefaultAppContainer(context: Context) : AppContainer {
 
     private val okHttpClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(20, TimeUnit.SECONDS)
+            .connectTimeout(8, TimeUnit.SECONDS)
+            // A Open Library às vezes demora bastante para responder (já vimos quase 20 s).
+            .readTimeout(45, TimeUnit.SECONDS)
             // A Open Library pede que apps se identifiquem pelo User-Agent.
             .addInterceptor { chain ->
                 chain.proceed(

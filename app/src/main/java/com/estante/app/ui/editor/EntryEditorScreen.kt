@@ -53,21 +53,27 @@ import com.estante.app.R
 import com.estante.app.domain.FieldError
 import com.estante.app.domain.ReadingStatus
 import com.estante.app.domain.ShelfEntryValidator
+import com.estante.app.ui.common.EmptyState
+import com.estante.app.ui.common.ErrorKind
+import com.estante.app.ui.common.ErrorState
 import com.estante.app.ui.common.LoadingState
 import com.estante.app.ui.common.MaxContentWidth
 import com.estante.app.ui.common.RatingBar
 import com.estante.app.ui.common.labelRes
+import kotlinx.coroutines.Dispatchers
 
 @Composable
 fun EntryEditorScreen(
     viewModel: EntryEditorViewModel,
     onClose: () -> Unit,
+    onFinished: (EditorResult) -> Unit,
 ) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
+    // Main.immediate: os campos de texto recebem o valor na mesma hora em que o usuário digita.
+    val state by viewModel.uiState.collectAsStateWithLifecycle(context = Dispatchers.Main.immediate)
 
-    // Quando o ViewModel informa que salvou/removeu, a tela fecha.
+    // Quando o ViewModel informa que salvou/removeu, a tela fecha e o app confirma o sucesso.
     LaunchedEffect(state.result) {
-        if (state.result != null) onClose()
+        state.result?.let(onFinished)
     }
 
     EntryEditorScreen(
@@ -79,6 +85,7 @@ fun EntryEditorScreen(
         onNoteChange = viewModel::onNoteChange,
         onSave = viewModel::onSave,
         onRemove = viewModel::onRemove,
+        onRetryLoad = viewModel::onRetryLoad,
     )
 }
 
@@ -93,6 +100,7 @@ fun EntryEditorScreen(
     onNoteChange: (String) -> Unit,
     onSave: () -> Unit,
     onRemove: () -> Unit,
+    onRetryLoad: () -> Unit,
 ) {
     Scaffold(
         topBar = {
@@ -112,19 +120,25 @@ fun EntryEditorScreen(
             )
         },
     ) { padding ->
-        if (state.isLoading) {
-            LoadingState(stringResource(R.string.shelf_loading), Modifier.padding(padding))
-            return@Scaffold
-        }
-        Box(
-            Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .imePadding()
-                .verticalScroll(rememberScrollState()),
-            contentAlignment = Alignment.TopCenter,
-        ) {
-            EditorForm(state, onStatusChange, onPagesChange, onRatingChange, onNoteChange, onSave, onRemove)
+        when {
+            state.isLoading -> LoadingState(stringResource(R.string.editor_loading), Modifier.padding(padding))
+            state.loadFailed -> ErrorState(ErrorKind.UNKNOWN, onRetryLoad, Modifier.padding(padding))
+            state.bookNotFound -> EmptyState(
+                icon = Icons.Filled.ErrorOutline,
+                title = stringResource(R.string.error_title),
+                message = stringResource(R.string.detail_not_found),
+                modifier = Modifier.padding(padding),
+            )
+            else -> Box(
+                Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+                    .imePadding()
+                    .verticalScroll(rememberScrollState()),
+                contentAlignment = Alignment.TopCenter,
+            ) {
+                EditorForm(state, onStatusChange, onPagesChange, onRatingChange, onNoteChange, onSave, onRemove)
+            }
         }
     }
 }
@@ -157,7 +171,7 @@ private fun EditorForm(
 
         // Resumo do erro no topo do formulário (e anunciado pelo leitor de tela).
         val summary = when {
-            state.saveFailed -> stringResource(R.string.error_unknown)
+            state.saveFailed -> stringResource(R.string.editor_save_failed)
             state.showErrors && !state.validation.isValid -> stringResource(R.string.editor_fix_errors)
             else -> null
         }

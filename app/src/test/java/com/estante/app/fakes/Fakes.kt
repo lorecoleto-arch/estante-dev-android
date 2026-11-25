@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 
 fun testBook(
@@ -61,16 +62,24 @@ class FakeShelfRepository(
 ) : ShelfRepository {
     val entries = MutableStateFlow<Map<String, ShelfEntry>>(emptyMap())
 
+    /** Quando preenchidos, simulam falha de leitura/gravação no banco. */
+    var readError: Exception? = null
+    var writeError: Exception? = null
+
     override fun observeShelf(): Flow<List<ShelfItem>> =
         combine(entries, books.catalog) { e, catalog ->
             e.values.sortedByDescending { it.updatedAt }.mapNotNull { entry ->
                 catalog[entry.bookId]?.let { ShelfItem(it, entry) }
             }
-        }
+        }.onStart { readError?.let { throw it } }
 
-    override fun observeEntry(bookId: String): Flow<ShelfEntry?> = entries.map { it[bookId] }
+    override fun observeEntry(bookId: String): Flow<ShelfEntry?> =
+        entries.map { it[bookId] }.onStart { readError?.let { throw it } }
 
-    override suspend fun save(entry: ShelfEntry) = entries.update { it + (entry.bookId to entry) }
+    override suspend fun save(entry: ShelfEntry) {
+        writeError?.let { throw it }
+        entries.update { it + (entry.bookId to entry) }
+    }
 
     override suspend fun remove(bookId: String) = entries.update { it - bookId }
 }

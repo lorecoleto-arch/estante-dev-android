@@ -2,73 +2,94 @@
 
 **Aluna:** Lorena Coleto — RA 842835 · **Projeto:** Estante de Livros
 
+## Objetivo
+
 Aplicativo Android para quem estuda **Engenharia de Software** organizar a leitura de **livros de
-programação** — *Código Limpo*, *Entendendo Algoritmos*, *Padrões de Projeto*, livros de lógica,
-Kotlin, arquitetura… Você busca os livros no catálogo público da
-[Open Library](https://openlibrary.org), vê os detalhes e registra na sua estante se **quer ler**,
-está **lendo** (com páginas lidas) ou **já leu** (com nota e anotação). A estante fica salva no
-aparelho e continua lá depois de fechar o app, inclusive sem internet.
+programação**. Você busca os livros no catálogo público da [Open Library](https://openlibrary.org),
+vê os detalhes e registra na sua estante se **quer ler**, está **lendo** (com páginas lidas) ou
+**já leu** (com nota e anotação). A estante fica salva no aparelho e continua disponível sem internet.
 
-O repositório tem **dois módulos de aplicativo**, um para cada etapa da disciplina, os dois sobre o
-mesmo tema:
+Toda a interface é feita em **Jetpack Compose**, com uma única `Activity`.
 
-| Módulo | Etapa | Tecnologia | O que faz |
-|---|---|---|---|
-| `views` | Parcial | Android Views (XML) + Intent | Lista de livros clássicos de programação (dados simulados) → detalhes → marcar como lido e dar nota |
-| `app` | Etapa 2 | Jetpack Compose | App completo: busca na API → detalhes → formulário de leitura → estante salva localmente |
+> A entrega da **Parcial** (Android Views/XML) está preservada na tag
+> [`parcial`](../../tree/parcial) deste repositório.
 
 ---
 
-## Como rodar
+## Como compilar e executar
 
-### Requisitos
-- **Android Studio** recente (com suporte ao Android Gradle Plugin 9.4). O JDK 17+ já vem junto (JBR).
-- Um emulador ou celular com **Android 8.0 (API 26)** ou superior.
-- **Internet** no emulador/celular para a busca do módulo `app` (o módulo `views` funciona offline).
+### Pré-requisitos
+- **Android Studio** recente, compatível com o Android Gradle Plugin **9.4** (o projeto foi testado no
+  Android Studio Quail 4 — 2026.1.4). O Java necessário (17 ou mais novo) já vem com ele.
+- **Android SDK Platform 37**. Se não estiver instalado, o Android Studio oferece o download na
+  sincronização; também dá para instalar em `Settings > Languages & Frameworks > Android SDK`.
+- Emulador ou celular com **Android 8.0 (API 26)** ou superior, com **internet** para buscar livros.
+- Internet no computador na primeira compilação, para baixar as dependências.
 
-> Não há chaves de API, senhas nem arquivo `.env`: a Open Library é pública e não exige autenticação.
+**Não é preciso configurar nenhuma chave, senha ou arquivo `secrets.properties`:** a Open Library é
+pública e não exige autenticação.
 
 ### Pelo Android Studio
-1. `File > Open…` e selecione a pasta do projeto.
-2. Espere o *Gradle Sync* terminar (na primeira vez ele baixa as dependências e, se faltar, o SDK 37).
-3. Na barra de cima, escolha a configuração de execução:
-   - **`app`** → Etapa 2 (Compose) — ícone **“Estante Dev”**;
-   - **`views`** → Parcial (Views/XML) — ícone **“Estante Dev (Views)”**.
-4. Clique em **Run ▶**.
+1. `File > Open…` e selecione a pasta do projeto (a que contém `settings.gradle.kts`).
+2. Espere o *Gradle Sync* terminar.
+3. Escolha a configuração **`app`** e um emulador ou celular.
+4. Clique em **Run ▶**. O app aparece com o nome **“Estante Dev”**.
 
 ### Pela linha de comando
+Com o `JAVA_HOME` apontando para o Java 17 ou mais novo e o SDK indicado em `ANDROID_HOME`
+(ou em `local.properties`):
+
 ```bash
-./gradlew :app:installDebug      # instala a Etapa 2 (Compose)
-./gradlew :views:installDebug    # instala a Parcial (Views)
-./gradlew test                   # roda todos os testes automatizados (na JVM, sem emulador)
+./gradlew :app:installDebug      # compila e instala no emulador/celular conectado
+./gradlew test                   # roda os testes automatizados (sem emulador)
 ```
 No Windows use `gradlew.bat` no lugar de `./gradlew`.
 
 ---
 
-## Fluxo principal (módulo `app`)
+## Telas
 
-1. **Buscar** — digite título, autor ou tecnologia, ou toque num dos **temas sugeridos**
-   (Clean Code, Algoritmos, Lógica de programação, Design Patterns, Engenharia de software, Kotlin,
-   Arquitetura). A busca é feita na API da Open Library (com *debounce*: espera você parar de
-   digitar). A última busca fica salva e é repetida ao abrir o app — na primeira vez, “clean code”.
-2. **Resultados** — lista (`LazyColumn`) com capa, autor e ano; livros que já estão na estante
-   mostram um selo (“Lendo”, “Lido”…).
-3. **Detalhes** — capa, dados do livro, descrição (carregada de forma assíncrona) e botão de
-   compartilhar.
-4. **Adicionar/editar leitura** — formulário com validação:
-   - “Lendo” exige páginas lidas (número entre 0 e o total do livro);
-   - “Lido” exige nota de 1 a 5;
-   - anotação opcional com até 500 caracteres.
-5. **Minha estante** — lista reativa dos livros salvos, com filtros por situação (`LazyRow`).
-   Tudo fica no banco local (Room) e continua lá ao reiniciar o app.
+1. **Buscar** — digite título, autor ou tecnologia, ou toque num tema sugerido (Clean Code,
+   Algoritmos, Design Patterns…). Na primeira vez abre com “clean code”; depois repete a última busca.
+2. **Detalhes** — capa, dados do livro, descrição, botão de compartilhar e a sua leitura.
+3. **Adicionar/editar leitura** — formulário com validação: “Lendo” exige as páginas lidas, “Lido”
+   exige nota de 1 a 5 e a anotação é opcional.
+4. **Minha estante** — os livros salvos, com filtros por situação.
 
-Sem internet, a busca mostra os **resultados já salvos** daquele termo (com um aviso); se não houver
-nada salvo, mostra o estado de **erro** com “Tentar de novo”.
+A pilha de navegação liga todas: Buscar → Detalhes → Formulário → Detalhes, e a estante também abre
+os detalhes de cada livro.
 
 ---
 
-## Arquitetura (módulo `app`)
+## Onde está cada item avaliado
+
+| Item | Onde |
+|---|---|
+| Três ou mais telas em Compose, sem layouts XML | 4 telas: `SearchScreen`, `BookDetailScreen`, `EntryEditorScreen`, `ShelfScreen`. Não existe pasta `res/layout` |
+| `LazyColumn` / `LazyRow` | `SearchScreen` (resultados e temas) e `ShelfScreen` (livros e filtros) |
+| `ViewModel` | `SearchViewModel`, `BookDetailViewModel`, `EntryEditorViewModel`, `ShelfViewModel` — expõem `StateFlow`, coletado com `collectAsStateWithLifecycle` |
+| Operação assíncrona com coroutines | Busca na API com *debounce* e cancelamento (`SearchViewModel.launchSearch`), descrição (`BookDetailViewModel.loadDescription`), gravação no banco (`EntryEditorViewModel.persist`) |
+| Feedback de cada estado | Tabela abaixo |
+| Navigation 3 em uma única `Activity` | `MainActivity`, `ui/navigation/Routes.kt` (rotas com argumento) e `ui/EstanteApp.kt` (`NavDisplay`, pilha e entries) |
+| Valores opcionais (`String?`, `Int?`) | `Book`, `ShelfEntry` e os DTOs. Ano, páginas, capa, descrição, nota e anotação podem faltar, e cada um tem um texto ou imagem alternativa. O código do app não usa `!!` |
+| `kotlinx.serialization` | JSON da API → DTOs em `data/remote/OpenLibraryApi.kt` (conversor do Retrofit em `AppContainer`); rotas `@Serializable` da navegação |
+| Sem dados sensíveis no repositório | Não há credenciais. `local.properties`, `secrets.properties` e `.env` estão no `.gitignore` |
+| Sem dados sensíveis nos logs | O código do app não escreve no Logcat |
+
+### Estados das operações assíncronas
+
+| Operação | Carregando | Sucesso | Vazio | Erro |
+|---|---|---|---|---|
+| Buscar livros | “Buscando livros…” | Lista com a quantidade de resultados | “Nenhum livro encontrado” | Mensagem conforme a causa + “Tentar de novo”; se houver resultado salvo, mostra-o com um aviso |
+| Abrir detalhes | “Carregando livro…” | Dados do livro | Livro não encontrado | “Tentar de novo” |
+| Carregar descrição | “Carregando descrição…” | Texto | Aviso de que não há descrição | Mensagem + “Tentar de novo” |
+| Abrir formulário | “Carregando formulário…” | Campos preenchidos | Livro não encontrado | “Tentar de novo” |
+| Salvar / remover leitura | Indicador no botão | Mensagem de confirmação | — | Aviso no topo, sem perder o que foi digitado |
+| Abrir a estante | “Carregando sua estante…” | Lista | “Sua estante está vazia” ou filtro sem livros | “Tentar de novo” |
+
+---
+
+## Arquitetura
 
 ```
 UI (Compose)  ──eventos──▶  ViewModel  ──▶  Repository  ──▶  Room / DataStore (local)
@@ -76,24 +97,19 @@ UI (Compose)  ──eventos──▶  ViewModel  ──▶  Repository  ──�
      └──── StateFlow<UiState> ─┘
 ```
 
-- **Fluxo unidirecional de dados:** a tela só *mostra* o `UiState` e *avisa* o ViewModel dos eventos
-  (`onQueryChange`, `onSave`…). O ViewModel é o único que muda o estado.
-- **Estados de tela:** cada tela tem um `UiState` com casos distintos — carregando, conteúdo,
-  lista vazia e erro — e o ViewModel sobrevive à rotação, então nada se perde ao girar o celular.
-- **Repository:** `BookRepository` (busca + cache) e `ShelfRepository` (estante). São interfaces, com
+- **Fluxo unidirecional de dados:** a tela mostra o `UiState` e avisa o ViewModel dos eventos
+  (`onQueryChange`, `onSave`…). Só o ViewModel muda o estado, e ele sobrevive à rotação.
+- **Repository:** `BookRepository` (busca + cache) e `ShelfRepository` (estante) são interfaces, com
   implementações reais (`Default…`) e *fakes* nos testes.
-- **Injeção de dependências manual:** `AppContainer` cria tudo uma vez (`EstanteApplication`) e as
-  telas recebem só as interfaces.
-- **DTO → domínio:** `BookDocDto`/`WorkDto` espelham o JSON da API e são convertidos para `Book`
-  (limpando Markdown da descrição, assuntos repetidos, campos ausentes).
-- **Cache com expiração:** o resultado de cada busca fica no Room por **1 hora**. Dentro desse prazo
-  a API não é chamada; depois (ou em “Atualizar”/“Tentar de novo”) busca de novo. Se a rede falhar,
-  usa o cache antigo — *offline-first*.
-- **Coroutines e cancelamento:** as operações rodam no `viewModelScope` (canceladas quando a tela sai
-  da pilha). Uma nova busca cancela a anterior (`Job.cancel()`), e `CancellationException` nunca é
-  engolida nos `try/catch`.
+- **Injeção de dependências manual:** `AppContainer` cria as dependências uma vez, em `EstanteApplication`.
+- **DTO → domínio:** `BookDocDto`/`WorkDto` espelham o JSON da API e são convertidos para `Book`.
+- **Cache:** o resultado de cada busca vale por **1 hora** no Room. Depois disso (ou em “Atualizar” e
+  “Tentar de novo”) a API é consultada; se ela falhar, o app usa o que está salvo.
+- **Nova tentativa:** a Open Library às vezes demora ou falha; nesses casos o app tenta mais uma vez
+  sozinho antes de mostrar o erro.
+- **Cancelamento:** as operações rodam no `viewModelScope`. Uma busca nova cancela a anterior, e
+  `CancellationException` nunca é engolida nos `try/catch`.
 
-### Estrutura de pastas
 ```
 app/src/main/java/com/estante/app/
 ├── AppContainer.kt, EstanteApplication.kt, MainActivity.kt
@@ -104,64 +120,26 @@ app/src/main/java/com/estante/app/
 │   └── preferences/ DataStore (última busca, filtro da estante)
 └── ui/
     ├── navigation/ rotas do Navigation 3
-    ├── common/     componentes reutilizáveis (BookListItem, RatingBar, estados de tela…)
+    ├── common/     componentes reutilizáveis e estados de tela
     ├── search/ detail/ editor/ shelf/   uma pasta por tela (Screen + ViewModel)
     └── theme/
 ```
-
-### Onde está cada requisito da Etapa 2
-
-| Requisito | Onde |
-|---|---|
-| Navigation 3 (rotas, entries, back stack, argumentos) | `ui/navigation/Routes.kt`, `ui/EstanteApp.kt` (`BookDetailRoute(bookId)`) |
-| `LazyColumn` / `LazyRow` | `SearchScreen` (resultados e temas), `ShelfScreen` (lista e filtros) |
-| Formulário com validação e feedback | `EntryEditorScreen` + `ShelfEntryValidator` (erro por campo + resumo no topo) |
-| `ViewModel` + `StateFlow` + `collectAsStateWithLifecycle` | todos os `*ViewModel.kt` e `*Screen.kt` |
-| Carregando / conteúdo / vazio / erro | `SearchResultsState`, `BookDetailUiState`, `ShelfUiState` + `LoadingState`/`EmptyState`/`ErrorState` |
-| Repository | `data/BookRepository.kt`, `data/ShelfRepository.kt` |
-| Operação assíncrona com coroutines e cancelamento | `SearchViewModel.launchSearch`, `BookDetailViewModel.loadDescription` |
-| Persistência local reativa | Room (`Flow` na estante) e DataStore (preferências) |
-| Acessibilidade | descrições (`contentDescription`), títulos (`heading`), áreas de toque ≥ 48dp, cores com contraste AA, textos em `sp` e telas roláveis para fonte grande, anúncio de erros (`liveRegion`/`error`) |
-| Sem segredos no código | API pública sem chave; `local.properties` e `.env` no `.gitignore` |
-
-Itens opcionais atendidos: mapeamento DTO → domínio, testes automatizados, validação de entradas e
-nada sensível em logs, cache com expiração, offline-first, animações implícitas (`AnimatedContent`,
-`AnimatedVisibility`, `animateItem`, `animateContentSize`), telas adaptáveis (barra inferior no
-celular, trilho lateral em telas largas e largura máxima de conteúdo), injeção manual de
-dependências com interfaces e fakes, e compartilhamento (Intent de envio).
-
----
-
-## Parcial (módulo `views`)
-
-- **Duas telas em XML:** `BookListActivity` (lista em `RecyclerView`) e `BookDetailActivity`
-  (detalhes). Usa `LinearLayout`, `FrameLayout`, `ScrollView`, `TextView`, `ImageView`, `Space`…
-- **Intent explícita com dados:** a lista abre os detalhes com
-  `Intent(context, BookDetailActivity::class.java)` levando o id do livro e o estado de leitura; os
-  detalhes devolvem o novo estado pela *Activity Result API*.
-- **ViewBinding** em tudo (nenhum `findViewById` no código do app).
-- **Interação que atualiza a tela:** “Marcar como lido” e as estrelas de nota; o resumo
-  “Você leu X de 8 livros” da lista é atualizado ao voltar.
-- **Modelos imutáveis:** `Book`, `ReadingState` e `BookItem` são `data class` com `val`; mudanças
-  geram cópias (`copy`). Ano, páginas, sinopse e nota são opcionais (`?`) e têm texto alternativo.
-- **Dados simulados:** `data/MockBooks.kt`.
-- **Opcionais:** componente XML reutilizável (`view_rating.xml` + `RatingView`), interface em
-  `Fragment` com ViewBinding respeitando o ciclo de vida (`BookDetailFragment`).
 
 ---
 
 ## Testes
 
-`./gradlew test` roda **33 testes** na JVM (os de interface usam Robolectric, sem emulador):
+`./gradlew test` roda **45 testes** na JVM (os de interface usam Robolectric, sem emulador):
 
 - `ShelfEntryValidatorTest` — regras do formulário;
-- `DefaultBookRepositoryTest` — cache, expiração, modo offline e erros (com fakes);
-- `MappersTest` — conversão DTO → domínio;
+- `DefaultBookRepositoryTest` — cache, expiração, modo offline e erros;
+- `OpenLibraryRemoteDataSourceTest` — nova tentativa quando a API falha de forma passageira;
+- `MappersTest` — JSON → DTO → domínio, com campos ausentes;
 - `EstanteDatabaseTest` — Room de verdade (banco em memória);
-- `SearchViewModelTest`, `EntryEditorViewModelTest` — estados, debounce/cancelamento, validação;
+- `SearchViewModelTest`, `EntryEditorViewModelTest` — estados, debounce/cancelamento e validação;
+- `AsyncStatesTest` — carregando, vazio, erro e “tentar de novo” nas demais telas;
 - `ComponentsTest` — componentes Compose e estados de erro/vazio;
-- `EstanteAppFlowTest` — fluxo completo na interface: buscar → detalhes → formulário → salvar → estante;
-- `views/NavigationTest` — Intent explícita e interação da Parcial.
+- `EstanteAppFlowTest` — fluxo completo na interface: buscar → detalhes → formulário → salvar → estante.
 
 ---
 
@@ -169,16 +147,14 @@ dependências com interfaces e fakes, e compartilhamento (Intent de envio).
 
 | Biblioteca | Para quê |
 |---|---|
-| **Jetpack Compose** (Material 3, ícones, navigation-suite) | Interface declarativa do módulo `app`; a *navigation-suite* troca barra inferior por trilho lateral em telas grandes |
-| **Navigation 3** | Navegação entre telas com uma pilha de rotas controlada pelo app |
+| **Jetpack Compose** (Material 3, ícones, navigation-suite) | Toda a interface |
+| **Navigation 3** | Navegação com uma pilha de rotas controlada pelo app |
 | **Lifecycle** (ViewModel, runtime-compose, viewmodel-navigation3) | `ViewModel`, `collectAsStateWithLifecycle` e um ViewModel por tela da pilha |
-| **Room** | Banco de dados local (cache do catálogo e estante do usuário) |
-| **DataStore Preferences** | Preferências simples (última busca, filtro da estante) |
+| **Kotlinx Serialization** | Converter o JSON da API em classes Kotlin e serializar as rotas |
 | **Retrofit** + **OkHttp** | Chamadas HTTP à API da Open Library |
-| **Kotlinx Serialization** | Converter JSON em classes Kotlin (DTOs) e serializar as rotas |
-| **Coil** | Carregar as capas dos livros a partir da internet |
-| **KSP** | Gera o código do Room em tempo de compilação |
-| **AppCompat, Material Components, RecyclerView, Fragment** | Base das telas em XML do módulo `views` |
-| **JUnit, Kotlinx Coroutines Test, Robolectric, Compose UI Test** | Testes automatizados |
+| **Room** + **KSP** | Banco de dados local e geração do código dele |
+| **DataStore Preferences** | Última busca e filtro da estante |
+| **Coil** | Carregar as capas dos livros |
+| **JUnit, Coroutines Test, Robolectric, Compose UI Test** | Testes automatizados |
 
 Dados de livros e capas: [Open Library](https://openlibrary.org/developers/api) (Internet Archive).

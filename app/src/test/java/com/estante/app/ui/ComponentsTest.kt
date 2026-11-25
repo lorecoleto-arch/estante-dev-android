@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.estante.app.fakes.testBook
 import com.estante.app.ui.common.ErrorKind
 import com.estante.app.ui.common.RatingBar
 import com.estante.app.ui.search.SearchResultsState
@@ -47,7 +48,8 @@ class ComponentsTest {
         composeRule.setContent {
             EstanteTheme {
                 SearchScreen(
-                    state = SearchUiState(query = "kotlin", results = SearchResultsState.Error(ErrorKind.NO_CONNECTION)),
+                    query = "kotlin",
+                    state = SearchUiState(results = SearchResultsState.Error(ErrorKind.NO_CONNECTION)),
                     onQueryChange = {},
                     onSearch = {},
                     onClear = {},
@@ -67,7 +69,8 @@ class ComponentsTest {
         composeRule.setContent {
             EstanteTheme {
                 SearchScreen(
-                    state = SearchUiState(query = "xyz", results = SearchResultsState.Empty("xyz")),
+                    query = "xyz",
+                    state = SearchUiState(results = SearchResultsState.Empty("xyz")),
                     onQueryChange = {},
                     onSearch = {},
                     onClear = {},
@@ -79,5 +82,29 @@ class ComponentsTest {
 
         composeRule.onNodeWithText("Nenhum livro encontrado").assertIsDisplayed()
         composeRule.onNodeWithText("Não achamos nada para “xyz”", substring = true).assertIsDisplayed()
+    }
+
+    @Test
+    fun busca_avisoDeResultadosSalvosApareceMesmoComAListaJaNaTela() {
+        val books = List(30) { testBook(id = "OL$it", title = "Livro $it") }
+        var isStale by mutableStateOf(false)
+        composeRule.setContent {
+            EstanteTheme {
+                SearchScreen(
+                    query = "kotlin",
+                    state = SearchUiState(results = SearchResultsState.Content(books, isStale)),
+                    onQueryChange = {},
+                    onSearch = {},
+                    onClear = {},
+                    onRetry = {},
+                    onBookClick = {},
+                )
+            }
+        }
+        composeRule.onNodeWithText("30 resultados").assertIsDisplayed()
+
+        isStale = true
+
+        composeRule.onNodeWithText("mostrando resultados salvos", substring = true).assertIsDisplayed()
     }
 }

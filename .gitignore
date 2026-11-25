@@ -13,6 +13,7 @@ captures/
 
 # Arquivos locais (caminho do SDK, chaves etc.) — nunca versionar
 local.properties
+secrets.properties
 .env
 *.jks
 *.keystore
